@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EJ's App">
+<meta name="theme-color" content="#FC4C02">
+<title>EJ's Training App</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+:root{
+  --bg:#FAFAFA;--s1:#FFFFFF;--s2:#F5F5F5;--s3:#EBEBEB;
+  --t1:#242428;--t2:#777777;--t3:#AAAAAA;
+  --b1:rgba(0,0,0,.08);--b2:rgba(0,0,0,.13);
+  --green:#27AE60;--orange:#FC4C02;--blue:#2980B9;--red:#E74C3C;--gold:#E67E22;
+}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;padding-bottom:80px}
+.screen.active{display:block}
+/* Header */
+.hdr{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--b1);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-icon{width:28px;height:28px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-tx{font-size:15px;font-weight:800;color:var(--t1)}
+.hdr-btns{display:flex;gap:4px}
+.hbtn{background:none;border:none;color:var(--t2);padding:7px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hbtn:active{background:var(--s2)}
+.hbtn.active{color:var(--orange)}
+/* Nav bar */
+.nav-bar{position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--b1);display:grid;grid-template-columns:1fr 1fr 1fr 1fr;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{background:none;border:none;color:var(--t3);padding:10px 4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;font-family:inherit}
+.nav-btn.active{color:var(--orange);border-top:2px solid var(--orange)}
+.nav-btn svg{width:20px;height:20px}
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:16px;margin:0 16px 12px}
+.card-title{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,var(--orange),#e04400);border:none;color:white;font-size:14px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;font-family:inherit;width:100%}
+.btn-secondary{background:var(--s2);border:1px solid var(--b2);color:var(--t1);font-size:14px;font-weight:600;padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;width:100%}
+.btn-orange{background:linear-gradient(135deg,var(--orange),#ff7043);border:none;color:white;font-size:14px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;font-family:inherit;width:100%}
+/* Inputs */
+.inp{width:100%;padding:11px 12px;background:var(--s2);border:1px solid var(--b2);border-radius:10px;color:var(--t1);font-size:14px;font-family:inherit}
+.inp:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(252,76,2,.1)}
+.lbl{font-size:11px;color:var(--t3);margin-bottom:5px;font-weight:600}
+.field{margin-bottom:12px}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:flex;align-items:flex-end}
+.modal-sheet{background:var(--s1);border-radius:22px 22px 0 0;width:100%;padding:20px 16px 40px;border-top:1px solid rgba(255,255,255,.1);max-height:90vh;overflow-y:auto}
+.modal-fullscreen{position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;padding:16px 16px 80px}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-title{font-size:18px;font-weight:800;color:var(--t1)}
+.close-btn{background:none;border:none;color:var(--t2);font-size:26px;cursor:pointer;line-height:1}
+/* Score colors */
+.eagle{background:#f1c40f;color:#000;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+.birdie{background:#3498db;color:white;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+.par-score{background:var(--s3);color:var(--t1);border-radius:4px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.bogey{background:#e67e22;color:white;border-radius:4px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+.dbl-bogey{background:var(--red);color:white;border-radius:4px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+/* Toast */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--b2);color:var(--t1);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;white-space:nowrap}
+.toast.show{opacity:1}
+/* Strength - match Mikey's app exactly */
+.modal-sh{background:var(--s1);border-radius:22px 22px 0 0;width:100%;max-height:90vh;overflow-y:auto;overflow-x:hidden;padding-bottom:30px;border-top:1px solid var(--b2)}
+.mhdl{width:40px;height:4px;background:var(--b2);border-radius:2px;margin:13px auto 0}
+.mhdr{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 8px}
+.mtit{font-size:19px;font-weight:800;color:var(--t1)}
+.mclose{background:var(--s2);border:1px solid var(--b1);color:var(--t2);width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer}
+.ex-c{background:var(--s2);margin:8px 16px;border-radius:12px;border:1px solid var(--b1);overflow:hidden;display:block}
+.ex-h{padding:12px 14px 8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ex-nm{font-size:15px;font-weight:700;color:var(--t1);flex:1}
+.set-hr,.set-r{display:grid;grid-template-columns:26px 1fr 68px 68px 32px;gap:6px;padding:8px 14px;align-items:center;border-top:1px solid var(--b1)}
+.sn{font-size:12px;font-weight:700;color:var(--t3);text-align:center}
+.sp{font-size:11px;color:var(--blue);font-weight:600;text-align:center}
+.si{font-size:14px;border:none;border-bottom:1.5px solid var(--b2);background:transparent;text-align:center;padding:3px 0;width:100%;color:var(--t1);font-family:inherit}
+.si::placeholder{color:var(--t3)}
+.sc{width:26px;height:26px;border:2px solid var(--b2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:transparent;justify-self:center;transition:all .15s}
+.sc.on{background:var(--orange);border-color:var(--orange)}
+.set-r.done{background:rgba(252,76,2,.04)}
+.fin-btn{margin:16px;background:linear-gradient(135deg,#FC4C02,#FF7043);border:none;color:white;font-size:16px;font-weight:700;padding:15px;border-radius:13px;width:calc(100% - 32px);cursor:pointer;font-family:inherit}
+.str-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:flex-end}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.ex-tip{font-size:11px;color:var(--t3);margin-top:2px}
+.ex-sw{background:var(--s2);border:1px solid var(--b2);color:var(--t2);font-size:11px;padding:4px 6px;border-radius:8px;cursor:pointer;font-family:inherit}
+/* Table */
+.sc-table{width:100%;border-collapse:collapse;font-size:12px}
+.sc-table th{padding:6px 3px;text-align:center;color:var(--t3);font-weight:600;background:var(--s2)}
+.sc-table td{padding:5px 3px;text-align:center;border-bottom:1px solid var(--b1)}
+.sc-table input[type=number]{width:34px;padding:3px;background:var(--s2);border:1px solid var(--b2);border-radius:6px;color:var(--t1);font-size:12px;text-align:center;font-family:inherit}
+.sc-table input[type=checkbox]{width:16px;height:16px}
+/* Stat pill */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.stat-box{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:12px;text-align:center}
+.stat-val{font-size:24px;font-weight:800}
+.stat-lbl{font-size:10px;color:var(--t3);margin-top:2px;font-weight:600}
+/* Practice type buttons */
+.practice-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 16px 16px}
+.practice-btn{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:16px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px}
+.practice-btn .picon{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.practice-btn .plbl{font-size:12px;font-weight:700;color:var(--t1)}
+.practice-btn .psub{font-size:10px;color:var(--t3)}
+/* Quick log cards on home */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px}
+.quick-card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.quick-card:active{background:var(--s2)}
+.quick-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.quick-title{font-size:13px;font-weight:700;color:var(--t1)}
+.quick-sub{font-size:11px;color:var(--t3)}
+/* Recent item row */
+.recent-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--b1)}
+.recent-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- HOME SCREEN -->
+<div id="HOME" class="screen active">
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="18" r="3"/><line x1="12" y1="2" x2="12" y2="15"/><path d="M12 2l6 4-6 2"/></svg></div>
+      <span class="logo-tx">EJ's App</span>
+    </div>
+    <div class="hdr-btns">
+      <button class="hbtn" id="btn-set" title="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div id="home-body" style="padding-top:16px"></div>
+</div>
+
+<!-- GOLF SCREEN -->
+<div id="GOLF" class="screen">
+  <div id="golf-body"></div>
+</div>
+
+<!-- STRENGTH SCREEN -->
+<div id="STR" class="screen">
+  <div id="str-body"></div>
+</div>
+
+<!-- NUTRITION SCREEN -->
+<div id="NUTR" class="screen">
+  <div id="nutr-body"></div>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div id="SET" class="screen">
+  <div id="set-body"></div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="nav-bar">
+  <button class="nav-btn active" id="nav-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="nav-btn" id="nav-golf">
+    <svg  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="3"/><path d="M4 3l16 7-16 7"/></svg>
+    Golf
+  </button>
+  <button class="nav-btn" id="nav-str">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M2 12h20"/></svg>
+    Training
+  </button>
+  <button class="nav-btn" id="nav-nutr">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+    Nutrition
+  </button>
+</nav>
+
+<script>
+var st = {};
+try{ var _s=localStorage.getItem('ej_app');if(_s){ var _p=JSON.parse(_s); st=Array.isArray(_p)?Object.assign({},_p):_p; var _o2={}; Object.keys(_p).forEach(function(k){ _o2[k]=_p[k]; }); st=_o2; } }catch(e){}
+
+// ── FIREBASE SYNC ─────────────────────────────────────────────────────────
+var FB_URL = 'https://ej-training-app-default-rtdb.firebaseio.com/data.json';
+var fbWriteTs = 0;
+var fbPollTimer = null;
+var svDebounce = null;
+
+function sv(){
+  if(Array.isArray(st)) st=Object.assign({},st);
+  try{localStorage.setItem('ej_app',JSON.stringify(st));}catch(e){}
+  clearTimeout(svDebounce);
+  svDebounce = setTimeout(function(){ fbPush(true); }, 1500);
+}
+
+function applyFirebaseData(data){
+  try{ if(!data||typeof data!=='object'||!Object.keys(data).length) return; }catch(e){ return; }
+  if(Array.isArray(data)) data=Object.assign({},data);
+  var remoteTs = data.lastUpdate || 0;
+  if(!remoteTs) return;
+  if(remoteTs <= fbWriteTs) return;
+  if(remoteTs <= (st.lastUpdate||0)) return;
+  st = data;
+  try{localStorage.setItem('ej_app',JSON.stringify(st));}catch(e){}
+  renderHome();
+}
+
+function initFirebaseSync(){
+  if(fbPollTimer) clearInterval(fbPollTimer);
+  fbPollTimer = setInterval(function(){
+    if(Date.now() - fbWriteTs < 3000) return;
+    fetch(FB_URL).then(function(r){ return r.ok?r.json():null; }).then(function(d){ if(d) applyFirebaseData(d); }).catch(function(){});
+  }, 5000);
+}
+
+function fbPush(silent){
+  if(Array.isArray(st)) st=Object.assign({},st);
+  var save = JSON.parse(JSON.stringify(st));
+  if(Array.isArray(save)) save=Object.assign({},save);
+  save.lastUpdate = Date.now();
+  fbWriteTs = save.lastUpdate;
+  fetch(FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(save)})
+  .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(){ st.lastUpdate=fbWriteTs; try{localStorage.setItem('ej_app',JSON.stringify(st));}catch(e){} if(!silent) toast('Saved!'); })
+  .catch(function(e){ if(!silent) toast('Save failed: '+e); });
+}
+
+function fbPull(silent){
+  if(!silent) toast('Pulling...');
+  fetch(FB_URL).then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(data){
+    if(data&&typeof data==='object'&&Object.keys(data).length){
+      st=data; fbWriteTs=0;
+      try{localStorage.setItem('ej_app',JSON.stringify(st));}catch(e){}
+      renderHome(); renderGolf(); renderStr();
+      if(!silent) toast('Synced!');
+    } else { if(!silent) toast('No cloud data yet'); }
+  }).catch(function(e){ if(!silent) toast('Sync failed: '+e); });
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────────────────
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+function getTodayStr(){
+  var d=new Date(); var mm=d.getMonth()+1; var dd=d.getDate();
+  return d.getFullYear()+'-'+(mm<10?'0':'')+mm+'-'+(dd<10?'0':'')+dd;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  var navId = id==='HOME'?'nav-home':id==='GOLF'?'nav-golf':id==='STR'?'nav-str':id==='NUTR'?'nav-nutr':null;
+  if(navId) document.getElementById(navId).classList.add('active');
+}
+
+// ── HOME SCREEN ────────────────────────────────────────────────────────────
+function renderHome(){
+  var t = document.getElementById('home-body'); if(!t) return;
+  var rounds = st.golfRounds||[];
+  var practices = st.golfPractice||[];
+  var strSessions = st.strSessions||[];
+  var lastRound = rounds.length ? rounds[rounds.length-1] : null;
+  var lastPractice = practices.length ? practices[practices.length-1] : null;
+  var lastStr = strSessions.length ? strSessions[strSessions.length-1] : null;
+
+  var d = new Date();
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  var html = '<div style="padding:16px 16px 8px">'
+    +'<div style="font-size:13px;color:var(--t3)">'+days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate()+'</div>'
+    +'<div style="font-size:26px;font-weight:800;color:var(--t1);margin-top:2px">What\'s up, EJ?</div>'
+    +'</div>';
+
+  // Quick log buttons
+  html += '<div class="quick-grid">'
+    +'<div class="quick-card" onclick="openGolfRound()">'
+    +'<span class="quick-icon" style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="3"/><path d="M4 3l16 7-16 7"/></svg></span>'
+    +'<span class="quick-title">Log Round</span>'
+    +'<span class="quick-sub">18-hole scorecard</span>'
+    +'</div>'
+    +'<div class="quick-card" onclick="showGolfPracticeMenu()">'
+    +'<span class="quick-icon" style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><path d="M9 18L20 4"/><path d="M16 4h4v4"/></svg></span>'
+    +'<span class="quick-title">Practice</span>'
+    +'<span class="quick-sub">Range, putting, chips</span>'
+    +'</div>'
+    +'<div class="quick-card" onclick="showStr()">'
+    +'<span class="quick-icon" style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"/><rect x="2" y="10" width="3" height="4" rx="1"/><rect x="19" y="10" width="3" height="4" rx="1"/><rect x="5" y="9" width="2" height="6" rx="1"/><rect x="17" y="9" width="2" height="6" rx="1"/></svg></span>'
+    +'<span class="quick-title">Lift</span>'
+    +'<span class="quick-sub">Log strength session</span>'
+    +'</div>'
+    +'<div class="quick-card" onclick="showNutr()">'
+    +'<span class="quick-icon" style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>'
+    +'<span class="quick-title">Food Log</span>'
+    +'<span class="quick-sub">Track nutrition</span>'
+    +'</div>'
+    +'</div>';
+
+  // Recent activity
+  html += '<div style="padding:0 16px 8px;font-size:13px;font-weight:700;color:var(--t1)">Recent Activity</div>';
+  html += '<div class="card" style="padding:0 16px">';
+
+  var hasAny = false;
+
+  if(lastRound){
+    hasAny = true;
+    var par = lastRound.par||72;
+    var diff = lastRound.total ? lastRound.total-par : null;
+    var diffStr = diff!==null?(diff>0?'+'+diff:diff===0?'E':''+diff):'--';
+    var diffColor = diff===null?'var(--t3)':diff<0?'var(--orange)':diff===0?'var(--blue)':'var(--red)';
+    html += '<div class="recent-row">'
+      +'<div><div style="font-size:13px;font-weight:700">'+( lastRound.course||'Round')+'</div>'
+      +'<div style="font-size:11px;color:var(--t3);margin-top:2px">Golf round &middot; '+(lastRound.date||'')+'</div></div>'
+      +'<div style="text-align:right"><div style="font-size:16px;font-weight:800">'+(lastRound.total||'--')+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:'+diffColor+'">'+diffStr+'</div></div>'
+      +'</div>';
+  }
+
+  if(lastPractice){
+    hasAny = true;
+    var typeLabel = lastPractice.type==='range'?'Driving Range':lastPractice.type==='putting'?'Putting':'Chipping';
+    var typeColor = lastPractice.type==='range'?'var(--orange)':lastPractice.type==='putting'?'var(--blue)':'var(--orange)';
+    html += '<div class="recent-row">'
+      +'<div><div style="font-size:13px;font-weight:700;color:'+typeColor+'">'+typeLabel+'</div>'
+      +'<div style="font-size:11px;color:var(--t3);margin-top:2px">Practice'+(lastPractice.duration?' &middot; '+lastPractice.duration+' min':'')+' &middot; '+(lastPractice.date||'')+'</div></div>'
+      +'<div style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><path d="M9 18L20 4"/><path d="M16 4h4v4"/></svg></div>'
+      +'</div>';
+  }
+
+  if(lastStr){
+    hasAny = true;
+    var exCount = lastStr.exercises ? lastStr.exercises.length : 0;
+    html += '<div class="recent-row">'
+      +'<div><div style="font-size:13px;font-weight:700">'+(lastStr.type||'Strength Session')+'</div>'
+      +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+exCount+' exercise'+(exCount!==1?'s':'')+' &middot; '+(lastStr.date||'')+'</div></div>'
+      +'<div style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"/><rect x="2" y="10" width="3" height="4" rx="1"/><rect x="19" y="10" width="3" height="4" rx="1"/><rect x="5" y="9" width="2" height="6" rx="1"/><rect x="17" y="9" width="2" height="6" rx="1"/></svg></div>'
+      +'</div>';
+  }
+
+  if(!hasAny){
+    html += '<div style="padding:24px 0;text-align:center;color:var(--t3);font-size:13px">No activity yet. Hit a quick log above!</div>';
+  }
+
+  html += '</div>';
+
+  // Golf stats summary
+  if(rounds.length){
+    var scores = rounds.filter(function(r){return r.total;}).map(function(r){return r.total;});
+    var avg = scores.length ? Math.round(scores.reduce(function(a,b){return a+b;})/scores.length*10)/10 : '--';
+    var best = scores.length ? Math.min.apply(null,scores) : '--';
+    var allPutts = rounds.filter(function(r){return r.holes;}).map(function(r){return r.holes.reduce(function(a,h){return a+(h.putts||0);},0);});
+    var avgPutts = allPutts.length ? Math.round(allPutts.reduce(function(a,b){return a+b;},0)/allPutts.length*10)/10 : '--';
+
+    html += '<div style="padding:0 16px 8px;font-size:13px;font-weight:700;color:var(--t1)">Golf Stats</div>';
+    html += '<div class="stat-grid" style="padding:0 16px 16px">'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--orange)">'+rounds.length+'</div><div class="stat-lbl">Rounds</div></div>'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--orange)">'+avg+'</div><div class="stat-lbl">Avg Score</div></div>'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--blue)">'+best+'</div><div class="stat-lbl">Best Round</div></div>'
+      +'</div>';
+  }
+
+  t.innerHTML = html;
+}
+
+// ── GOLF SCREEN ────────────────────────────────────────────────────────────
+function showGolf(){ renderGolf(); showScreen('GOLF'); }
+
+function renderGolf(){
+  var t = document.getElementById('golf-body'); if(!t) return;
+  var rounds = (st.golfRounds||[]).slice().reverse();
+  var practices = (st.golfPractice||[]).slice().reverse();
+
+  var html = '<div style="padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="font-size:22px;font-weight:800;color:var(--t1)">Golf</div>'
+    +'<button onclick="openGolfRound()" style="background:linear-gradient(135deg,var(--orange),#e04400);border:none;color:white;font-size:13px;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:inherit">+ Round</button>'
+    +'</div>';
+
+  // Practice buttons
+  html += '<div class="practice-grid">'
+    +'<div class="practice-btn" onclick="openGolfPractice(\'range\')">'
+    +'<span class="picon" style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><path d="M9 18L20 4"/><path d="M16 4h4v4"/></svg></span><span class="plbl">Range</span><span class="psub">Driving</span></div>'
+    +'<div class="practice-btn" onclick="openGolfPractice(\'putting\')">'
+    +'<span class="picon" style="color:var(--blue)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="20" r="2"/><path d="M12 18V6"/><path d="M12 6l8 3-8 3"/></svg></span><span class="plbl">Putting</span><span class="psub">Green work</span></div>'
+    +'<div class="practice-btn" onclick="openGolfPractice(\'chipping\')">'
+    +'<span class="picon" style="color:var(--orange)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l7-14 7 14"/><path d="M8 13h8"/></svg></span><span class="plbl">Chipping</span><span class="psub">Short game</span></div>'
+    +'</div>';
+
+  // Stats
+  if(rounds.length){
+    var scores = rounds.filter(function(r){return r.total;}).map(function(r){return r.total;});
+    var avg = scores.length?Math.round(scores.reduce(function(a,b){return a+b;})/scores.length*10)/10:'--';
+    var best = scores.length?Math.min.apply(null,scores):'--';
+    var allGIR = rounds.filter(function(r){return r.holes;}).map(function(r){return r.holes.filter(function(h){return h.gir;}).length;});
+    var avgGIR = allGIR.length?Math.round(allGIR.reduce(function(a,b){return a+b;},0)/allGIR.length*10)/10:'--';
+    var allFIR = rounds.filter(function(r){return r.holes;}).map(function(r){return r.holes.filter(function(h){return h.par!==3&&h.fir;}).length;});
+    var avgFIR = allFIR.length?Math.round(allFIR.reduce(function(a,b){return a+b;},0)/allFIR.length*10)/10:'--';
+    var allPutts = rounds.filter(function(r){return r.holes;}).map(function(r){return r.holes.reduce(function(a,h){return a+(h.putts||0);},0);});
+    var avgPutts = allPutts.length?Math.round(allPutts.reduce(function(a,b){return a+b;},0)/allPutts.length*10)/10:'--';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px">'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--orange)">'+avg+'</div><div class="stat-lbl">Avg Score</div></div>'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--orange)">'+best+'</div><div class="stat-lbl">Best Round</div></div>'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--blue)">'+avgGIR+'</div><div class="stat-lbl">Avg GIR</div></div>'
+      +'<div class="stat-box"><div class="stat-val" style="color:var(--gold)">'+avgPutts+'</div><div class="stat-lbl">Avg Putts</div></div>'
+      +'</div>';
+  }
+
+  // Rounds list
+  if(rounds.length){
+    html += '<div style="padding:0 16px 8px;font-size:13px;font-weight:700;color:var(--t1)">Rounds</div>';
+    rounds.forEach(function(r,i){
+      var idx = (st.golfRounds||[]).length-1-i;
+      var par = r.par||72;
+      var diff = r.total?r.total-par:null;
+      var diffStr = diff!==null?(diff>0?'+'+diff:diff===0?'E':''+diff):'--';
+      var diffColor = diff===null?'var(--t3)':diff<0?'var(--orange)':diff===0?'var(--blue)':'var(--red)';
+      var fir = r.holes?r.holes.filter(function(h){return h.par!==3&&h.fir;}).length:0;
+      var firT = r.holes?r.holes.filter(function(h){return h.par!==3;}).length:0;
+      var gir = r.holes?r.holes.filter(function(h){return h.gir;}).length:0;
+      var putts = r.holes?r.holes.reduce(function(a,h){return a+(h.putts||0);},0):0;
+      html += '<div class="card">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
+        +'<div><div style="font-size:15px;font-weight:700">'+(r.course||'Round')+'</div>'
+        +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+(r.date||'')+(r.tees?' &middot; '+r.tees+' tees':'')+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<div style="text-align:right"><div style="font-size:22px;font-weight:800">'+(r.total||'--')+'</div>'
+        +'<div style="font-size:13px;font-weight:700;color:'+diffColor+'">'+diffStr+'</div></div>'
+        +'<button onclick="delGolfRound('+idx+')" style="background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer">&times;</button>'
+        +'</div></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px">'
+        +'<div style="background:var(--s2);border-radius:8px;padding:7px;text-align:center"><div style="font-weight:700;font-size:13px">'+fir+'/'+firT+'</div><div style="color:var(--t3)">FIR</div></div>'
+        +'<div style="background:var(--s2);border-radius:8px;padding:7px;text-align:center"><div style="font-weight:700;font-size:13px">'+gir+'/18</div><div style="color:var(--t3)">GIR</div></div>'
+        +'<div style="background:var(--s2);border-radius:8px;padding:7px;text-align:center"><div style="font-weight:700;font-size:13px">'+putts+'</div><div style="color:var(--t3)">Putts</div></div>'
+        +'</div>'
+        +(r.notes?'<div style="font-size:11px;color:var(--t3);margin-top:8px;font-style:italic">'+r.notes+'</div>':'')
+        +'</div>';
+    });
+  }
+
+  // Practice list
+  if(practices.length){
+    html += '<div style="padding:8px 16px 8px;font-size:13px;font-weight:700;color:var(--t1)">Practice Sessions</div>';
+    practices.forEach(function(p,i){
+      var idx = (st.golfPractice||[]).length-1-i;
+      var typeColor = p.type==='range'?'var(--orange)':p.type==='putting'?'var(--blue)':'var(--orange)';
+      var typeLabel = p.type==='range'?'Driving Range':p.type==='putting'?'Putting':'Chipping';
+      var detail = '';
+      if(p.type==='range'&&p.clubs) detail += p.clubs;
+      if(p.type==='putting'&&p.makes&&p.attempts) detail += p.makes+'/'+p.attempts+' makes';
+      if(p.type==='chipping'&&p.makes&&p.attempts) detail += p.makes+'/'+p.attempts+' up&downs';
+      html += '<div class="card" style="display:flex;justify-content:space-between;align-items:center">'
+        +'<div><div style="font-size:14px;font-weight:700;color:'+typeColor+'">'+typeLabel+'</div>'
+        +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+(p.date||'')+(p.duration?' &middot; '+p.duration+'min':'')+(detail?' &middot; '+detail:'')+'</div>'
+        +(p.notes?'<div style="font-size:11px;color:var(--t3);margin-top:3px;font-style:italic">'+p.notes+'</div>':'')+'</div>'
+        +'<button onclick="delGolfPractice('+idx+')" style="background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer">&times;</button>'
+        +'</div>';
+    });
+  }
+
+  if(!rounds.length && !practices.length){
+    html += '<div style="padding:40px 16px;text-align:center;color:var(--t3);font-size:14px">No rounds or practice yet.<br>Log your first round above!</div>';
+  }
+
+  html += '<div style="height:20px"></div>';
+  t.innerHTML = html;
+}
+
+function delGolfRound(idx){ if(!st.golfRounds)return; st.golfRounds.splice(idx,1); sv(); renderGolf(); renderHome(); }
+function delGolfPractice(idx){ if(!st.golfPractice)return; st.golfPractice.splice(idx,1); sv(); renderGolf(); renderHome(); }
+
+function showGolfPracticeMenu(){
+  var old=document.getElementById('practice-menu');if(old)old.remove();
+  var ov=document.createElement('div'); ov.id='practice-menu'; ov.className='modal-overlay';
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  var sh=document.createElement('div'); sh.className='modal-sheet';
+  sh.innerHTML='<div class="modal-hdr"><div class="modal-title">Practice Type</div><button class="close-btn" onclick="document.getElementById(\'practice-menu\').remove()">&times;</button></div>'
+    +'<div style="display:grid;grid-template-columns:1fr;gap:10px">'
+    +'<button onclick="document.getElementById(\'practice-menu\').remove();openGolfPractice(\'range\')" style="background:var(--s2);border:1px solid var(--b2);color:var(--orange);font-size:15px;font-weight:700;padding:16px;border-radius:12px;cursor:pointer;font-family:inherit;text-align:left">Driving Range</button>'
+    +'<button onclick="document.getElementById(\'practice-menu\').remove();openGolfPractice(\'putting\')" style="background:var(--s2);border:1px solid var(--b2);color:var(--blue);font-size:15px;font-weight:700;padding:16px;border-radius:12px;cursor:pointer;font-family:inherit;text-align:left">&#9968; Putting Practice</button>'
+    +'<button onclick="document.getElementById(\'practice-menu\').remove();openGolfPractice(\'chipping\')" style="background:var(--s2);border:1px solid var(--b2);color:var(--orange);font-size:15px;font-weight:700;padding:16px;border-radius:12px;cursor:pointer;font-family:inherit;text-align:left">&#9971; Chipping Practice</button>'
+    +'</div>';
+  ov.appendChild(sh); document.body.appendChild(ov);
+}
+
+// ── GOLF ROUND SCORECARD ──────────────────────────────────────────────────
+function openGolfRound(){
+  var old=document.getElementById('golf-round-modal');if(old)old.remove();
+  var defaultPars=[4,4,3,4,5,3,4,4,5,4,4,3,4,5,3,4,4,5];
+  var ov=document.createElement('div'); ov.id='golf-round-modal'; ov.className='modal-fullscreen';
+
+  var today=getTodayStr();
+  var html='<div class="modal-hdr">'
+    +'<div class="modal-title">New Round</div>'
+    +'<button class="close-btn" onclick="document.getElementById(\'golf-round-modal\').remove()">&times;</button>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
+    +'<div class="field" style="margin:0"><div class="lbl">Course</div><input class="inp" id="gr-course" placeholder="Course name"></div>'
+    +'<div class="field" style="margin:0"><div class="lbl">Date</div><input class="inp" id="gr-date" type="date" value="'+today+'"></div>'
+    +'<div class="field" style="margin:0"><div class="lbl">Tees</div>'
+    +'<select class="inp" id="gr-tees"><option>Black</option><option>Blue</option><option>White</option><option selected>Gold</option><option>Red</option></select></div>'
+    +'<div class="field" style="margin:0"><div class="lbl">Course Par</div><input class="inp" id="gr-par" type="number" value="72"></div>'
+    +'</div>';
+
+  html += '<div style="overflow-x:auto;margin-bottom:14px">'
+    +'<table class="sc-table">'
+    +'<thead><tr><th>Hole</th><th>Par</th><th>Score</th><th>Putts</th><th>FIR</th><th>GIR</th><th>Pen</th><th>Sand</th></tr></thead>'
+    +'<tbody>';
+
+  defaultPars.forEach(function(p,i){
+    if(i===9) html+='<tr><td colspan="8" style="background:var(--s2);padding:4px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;padding-left:8px">BACK 9</td></tr>';
+    html+='<tr>'
+      +'<td style="font-weight:700;color:var(--t1)">'+(i+1)+'</td>'
+      +'<td><input type="number" id="gr-par-'+i+'" value="'+p+'" min="3" max="5"></td>'
+      +'<td><input type="number" id="gr-s-'+i+'" placeholder="-" min="1" max="15"></td>'
+      +'<td><input type="number" id="gr-p-'+i+'" placeholder="-" min="0" max="8"></td>'
+      +'<td><input type="checkbox" id="gr-fir-'+i+'"></td>'
+      +'<td><input type="checkbox" id="gr-gir-'+i+'"></td>'
+      +'<td><input type="number" id="gr-pen-'+i+'" value="0" min="0" max="5"></td>'
+      +'<td><input type="checkbox" id="gr-sand-'+i+'"></td>'
+      +'</tr>';
+  });
+
+  html += '</tbody></table></div>'
+    +'<div class="field"><div class="lbl">Notes</div>'
+    +'<textarea class="inp" id="gr-notes" rows="2" placeholder="Conditions, notes..."></textarea></div>'
+    +'<button class="btn-primary" onclick="saveGolfRound()">Save Round</button>'
+    +'<div style="height:20px"></div>';
+
+  ov.innerHTML = html;
+  document.body.appendChild(ov);
+}
+
+function saveGolfRound(){
+  var course=(document.getElementById('gr-course').value||'').trim()||'Unknown Course';
+  var date=document.getElementById('gr-date').value||getTodayStr();
+  var tees=document.getElementById('gr-tees').value;
+  var par=parseInt(document.getElementById('gr-par').value)||72;
+  var notes=(document.getElementById('gr-notes').value||'').trim();
+  var holes=[]; var total=0;
+  for(var i=0;i<18;i++){
+    var s=parseInt(document.getElementById('gr-s-'+i).value)||0;
+    var p=parseInt(document.getElementById('gr-p-'+i).value)||0;
+    var hp=parseInt(document.getElementById('gr-par-'+i).value)||4;
+    holes.push({hole:i+1,par:hp,strokes:s,putts:p,
+      fir:document.getElementById('gr-fir-'+i).checked,
+      gir:document.getElementById('gr-gir-'+i).checked,
+      penalty:parseInt(document.getElementById('gr-pen-'+i).value)||0,
+      sand:document.getElementById('gr-sand-'+i).checked});
+    total+=s;
+  }
+  var round={course:course,date:date,tees:tees,par:par,total:total||null,holes:holes,notes:notes};
+  if(!st.golfRounds) st.golfRounds=[];
+  st.golfRounds.push(round);
+  sv();
+  document.getElementById('golf-round-modal').remove();
+  renderGolf(); renderHome();
+  toast('Round saved!');
+}
+
+// ── GOLF PRACTICE ────────────────────────────────────────────────
+var PUTT_DISTS = ['3ft','6ft','8ft','10ft','15ft','20ft','25ft','30ft'];
+var CHIP_DISTS = ['10yd','20yd','30yd','40yd','50yd','60yd','75yd'];
+var ALL_CLUBS  = ['Driver','3-Wood','5-Wood','Hybrid','2-Iron','3-Iron','4-Iron','5-Iron','6-Iron','7-Iron','8-Iron','9-Iron','PW','GW','SW','LW','Putter'];
+
+function openGolfPractice(type){
+  var old=document.getElementById('golf-practice-modal');if(old)old.remove();
+  var today=getTodayStr();
+  var typeLabel=type==='range'?'Driving Range':type==='putting'?'Putting Practice':'Chipping Practice';
+  var typeColor=type==='range'?'var(--orange)':type==='putting'?'var(--blue)':'var(--orange)';
+
+  var ov=document.createElement('div'); ov.id='golf-practice-modal'; ov.className='modal-fullscreen';
+
+  var html='<div class="modal-hdr"><div class="modal-title" style="color:'+typeColor+'">'+typeLabel+'</div>'
+    +'<button class="close-btn" onclick="document.getElementById(\'golf-practice-modal\').remove()">&times;</button></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<div class="field"><div class="lbl">Date</div><input class="inp" id="gp-date" type="date" value="'+today+'"></div>'
+    +'<div class="field"><div class="lbl">Duration</div>'
+    +'<select class="inp" id="gp-dur"><option value="0">-- min --</option>'
+    +'<option>15</option><option>20</option><option>30</option><option>45</option><option>60</option><option>75</option><option>90</option><option>120</option>'
+    +'</select></div>'
+    +'</div>';
+
+  if(type==='range'){
+    html += '<div class="field"><div class="lbl" style="color:var(--orange);font-size:12px">Clubs Worked On</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">';
+    ALL_CLUBS.forEach(function(cl){
+      var cid='gp-cl-'+cl.replace(/[^a-z0-9]/gi,'');
+      html+='<label style="display:flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:12px;font-weight:600">'
+        +'<input type="checkbox" id="'+cid+'" style="accent-color:var(--orange)"> '+cl+'</label>';
+    });
+    html += '</div></div>';
+    html += '<div class="field"><div class="lbl">Shot Shape Focus</div>'
+      +'<select class="inp" id="gp-shape"><option value="">-- Select --</option>'
+      +'<option>Straight</option><option>Draw</option><option>Fade</option><option>High Draw</option><option>Low Stinger</option><option>Flop Shot</option><option>Punch Shot</option>'
+      +'</select></div>';
+    html += '<div class="field"><div class="lbl">Longest Drive (yards)</div>'
+      +'<input class="inp" type="number" id="gp-longest" placeholder="e.g. 275"></div>';
+    html += '<div class="field"><div class="lbl">Balls Hit</div>'
+      +'<input class="inp" type="number" id="gp-balls" placeholder="50"></div>';
+
+  } else if(type==='putting'){
+    html += '<div style="font-size:12px;color:var(--t2);margin-bottom:10px">Log each distance you practiced.</div>';
+    PUTT_DISTS.forEach(function(dist){
+      var did=dist.replace(/[^a-z0-9]/gi,'');
+      html+='<div style="background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:12px;margin-bottom:8px">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:8px">'+dist+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+        +'<div><div class="lbl">Attempts</div><input class="inp" type="number" id="gp-att-'+did+'" placeholder="10" min="0"></div>'
+        +'<div><div class="lbl">Makes</div><input class="inp" type="number" id="gp-mk-'+did+'" placeholder="8" min="0"></div>'
+        +'<div><div class="lbl">Make %</div><div class="inp" id="gp-pct-'+did+'" style="background:var(--s3);color:var(--t2);text-align:center">--</div></div>'
+        +'</div></div>';
+    });
+    html += '<div class="field"><div class="lbl">Total Putts in Session</div>'
+      +'<input class="inp" type="number" id="gp-total" placeholder="100"></div>';
+
+  } else {
+    html += '<div style="font-size:12px;color:var(--t2);margin-bottom:10px">Log each distance you practiced.</div>';
+    CHIP_DISTS.forEach(function(dist){
+      var did=dist.replace(/[^a-z0-9]/gi,'');
+      html+='<div style="background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:12px;margin-bottom:8px">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:8px">'+dist+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+        +'<div><div class="lbl">Attempts</div><input class="inp" type="number" id="gp-att-'+did+'" placeholder="10" min="0"></div>'
+        +'<div><div class="lbl">Up & Downs</div><input class="inp" type="number" id="gp-ud-'+did+'" placeholder="7" min="0"></div>'
+        +'<div><div class="lbl">U&D %</div><div class="inp" id="gp-pct-'+did+'" style="background:var(--s3);color:var(--t2);text-align:center">--</div></div>'
+        +'</div></div>';
+    });
+  }
+
+  html += '<div class="field"><div class="lbl">Notes / Goals</div>'
+    +'<textarea class="inp" id="gp-notes" rows="2" placeholder="What you worked on..."></textarea></div>'
+    +'<button class="btn-primary" onclick="saveGolfPractice(\''+type+'\')" >Save Practice</button>'
+    +'<div style="height:20px"></div>';
+
+  ov.innerHTML = html;
+  document.body.appendChild(ov);
+
+  if(type==='putting'){
+    PUTT_DISTS.forEach(function(dist){
+      var did=dist.replace(/[^a-z0-9]/gi,'');
+      var attEl=document.getElementById('gp-att-'+did);
+      var mkEl=document.getElementById('gp-mk-'+did);
+      var pctEl=document.getElementById('gp-pct-'+did);
+      function calcPct(){ var a=parseInt(attEl.value)||0; var m=parseInt(mkEl.value)||0; pctEl.textContent=a>0?Math.round(m/a*100)+'%':'--'; }
+      if(attEl) attEl.oninput=calcPct;
+      if(mkEl) mkEl.oninput=calcPct;
+    });
+  }
+  if(type==='chipping'){
+    CHIP_DISTS.forEach(function(dist){
+      var did=dist.replace(/[^a-z0-9]/gi,'');
+      var attEl=document.getElementById('gp-att-'+did);
+      var udEl=document.getElementById('gp-ud-'+did);
+      var pctEl=document.getElementById('gp-pct-'+did);
+      function calcPct(){ var a=parseInt(attEl.value)||0; var u=parseInt(udEl.value)||0; pctEl.textContent=a>0?Math.round(u/a*100)+'%':'--'; }
+      if(attEl) attEl.oninput=calcPct;
+      if(udEl) udEl.oninput=calcPct;
+    });
+  }
+}
+
+function saveGolfPractice(type){
+  var date=document.getElementById('gp-date').value||getTodayStr();
+  var dur=parseInt(document.getElementById('gp-dur').value)||0;
+  var notes=(document.getElementById('gp-notes').value||'').trim();
+  var p={type:type,date:date,duration:dur,notes:notes};
+
+  if(type==='range'){
+    var clubs=[];
+    ALL_CLUBS.forEach(function(cl){ var el=document.getElementById('gp-cl-'+cl.replace(/[^a-z0-9]/gi,'')); if(el&&el.checked) clubs.push(cl); });
+    p.clubs=clubs;
+    p.shape=(document.getElementById('gp-shape')||{}).value||'';
+    p.longest=parseInt((document.getElementById('gp-longest')||{}).value)||0;
+    p.balls=parseInt((document.getElementById('gp-balls')||{}).value)||0;
+  } else if(type==='putting'){
+    var ddata=[];
+    PUTT_DISTS.forEach(function(dist){
+      var did=dist.replace(/[^a-z0-9]/gi,'');
+      var att=parseInt((document.getElementById('gp-att-'+did)||{}).value)||0;
+      var mk=parseInt((document.getElementById('gp-mk-'+did)||{}).value)||0;
+      if(att>0) ddata.push({dist:dist,attempts:att,makes:mk});
+    });
+    p.distData=ddata;
+    p.totalPutts=parseInt((document.getElementById('gp-total')||{}).value)||0;
+  } else {
+    var ddata=[];
+    CHIP_DISTS.forEach(function(dist){
+      var did=dist.replace(/[^a-z0-9]/gi,'');
+      var att=parseInt((document.getElementById('gp-att-'+did)||{}).value)||0;
+      var ud=parseInt((document.getElementById('gp-ud-'+did)||{}).value)||0;
+      if(att>0) ddata.push({dist:dist,attempts:att,updowns:ud});
+    });
+    p.distData=ddata;
+  }
+
+  if(!st.golfPractice) st.golfPractice=[];
+  st.golfPractice.push(p);
+  sv();
+  document.getElementById('golf-practice-modal').remove();
+  renderGolf(); renderHome();
+  toast('Practice saved!');
+}
+// ── STRENGTH TRAINING ──────────────────────────────────────────────────────
+var FBA=[["Goblet Squat","3","12","Feet shoulder-width, squat deep"],["Romanian Deadlift (RDL)","3","10","Hinge at hips, feel hamstrings"],["Bench Press","3","8","Full range, control descent"],["Push-up","3","15","Chest to floor, full lockout"],["Band Row","3","15","Squeeze shoulder blades"],["Dead Bug","3","10","Per side, lower back flat"]];
+var FBB=[["Back Squat","3","8","Bar on traps, depth parallel"],["Single-Leg RDL","3","8","Per side, balance focus"],["Dumbbell Press","3","10","Full range of motion"],["Pull-up / Lat Pulldown","3","8","Full hang to chin"],["Dumbbell Row","3","12","Per side, elbow high"],["Plank","3","45s","Straight line, squeeze glutes"]];
+var curSW2 = 1;
+
+function showStr(){ renderStr(); showScreen('STR'); }
+
+function renderStr(){
+  var t=document.getElementById('str-body'); if(!t) return;
+  var sessions=(st.strSessions||[]).slice().reverse();
+
+  var html='<div style="padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="font-size:22px;font-weight:800;color:var(--t1)">Strength Training</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px">'
+    +'<button onclick="openStr(\'A\')" style="background:linear-gradient(135deg,var(--orange),#e04400);border:none;color:white;font-size:15px;font-weight:700;padding:16px;border-radius:14px;cursor:pointer;font-family:inherit">Log Full Body A</button>'
+    +'<button onclick="openStr(\'B\')" style="background:var(--s1);border:1px solid var(--b1);color:var(--t1);font-size:15px;font-weight:700;padding:16px;border-radius:14px;cursor:pointer;font-family:inherit">Log Full Body B</button>'
+    +'</div>';
+
+  if(!sessions.length){
+    html+='<div style="padding:20px 16px;text-align:center;color:var(--t3);font-size:14px">No sessions yet. Log your first workout!</div>';
+  } else {
+    sessions.forEach(function(s,i){
+      var idx=(st.strSessions||[]).length-1-i;
+      var totalSets=0;
+      (s.exercises||[]).forEach(function(e){ totalSets+=(e.sets||[]).filter(function(set){return set.done;}).length; });
+      html+='<div class="card">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
+        +'<div><div style="font-size:15px;font-weight:700">'+(s.type||'Session')+'</div>'
+        +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+(s.date||'')+(s.duration?' &middot; '+s.duration+' min':'')+'</div></div>'
+        +'<button onclick="delStrSession('+idx+')" style="background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer">&times;</button>'
+        +'</div>';
+      (s.exercises||[]).forEach(function(ex){
+        html+='<div style="margin-bottom:6px">'
+          +'<div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px">'+ex.name+'</div>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        (ex.sets||[]).forEach(function(set){
+          if(!set.done) return;
+          html+='<div style="background:rgba(252,76,2,.1);border:1px solid rgba(252,76,2,.2);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--orange)">'
+            +(set.w?set.w+'lb ':'')+set.r+'rep'+(set.r!==1?'s':'')+'</div>';
+        });
+        html+='</div></div>';
+      });
+      html+='</div>';
+    });
+  }
+  t.innerHTML=html;
+}
+
+function delStrSession(idx){ if(!st.strSessions)return; st.strSessions.splice(idx,1); sv(); renderStr(); renderHome(); }
+
+function openStr(letter){
+  var exs=letter==='A'?FBA:FBB;
+  var modal=document.getElementById('mod-'+letter);
+
+  var altMap={
+    0:['Goblet Squat','Back Squat','Bulgarian Split Squat','Leg Press'],
+    1:['Romanian Deadlift (RDL)','Conventional Deadlift','Single-Leg RDL','Hip Thrust'],
+    2:['Bench Press','Incline Bench Press','Overhead Press','Dumbbell Press'],
+    3:['Push-up','Dumbbell Press','Incline Press','Landmine Press'],
+    4:['Band Row','Dumbbell Row','Pull-up','Cable Row','Face Pull'],
+    5:['Dead Bug','Plank','Ab Wheel','Pallof Press','Hanging Leg Raise']
+  };
+
+  modal.innerHTML='';
+  var sheet=document.createElement('div');
+  sheet.className='modal-sh';
+
+  var hdl=document.createElement('div');hdl.className='mhdl';sheet.appendChild(hdl);
+
+  var hdr=document.createElement('div');hdr.className='mhdr';
+  var htxt=document.createElement('div');
+  htxt.innerHTML='<div class="mtit">Full Body '+letter+'</div>';
+  var xbtn=document.createElement('button');
+  xbtn.className='mclose';xbtn.innerHTML='&#10005;';
+  xbtn.addEventListener('click',function(){closeStr(letter);});
+  hdr.appendChild(htxt);hdr.appendChild(xbtn);
+  sheet.appendChild(hdr);
+
+  exs.forEach(function(ex,ei){
+    var alts=(altMap[ei]||[]).filter(function(a){return a!==ex[0];});
+    var card=document.createElement('div');card.className='ex-c';
+
+    var exhdr=document.createElement('div');exhdr.className='ex-h';
+    var exinfo=document.createElement('div');
+    var exnm=document.createElement('div');exnm.className='ex-nm';exnm.id='en_'+letter+'_'+ei;exnm.textContent=ex[0];
+    var extip=document.createElement('div');extip.className='ex-tip';extip.textContent=ex[3];
+    exinfo.appendChild(exnm);exinfo.appendChild(extip);
+
+    var sel=document.createElement('select');sel.className='ex-sw';
+    var defOpt=document.createElement('option');defOpt.value='';defOpt.textContent='Swap exercise';
+    sel.appendChild(defOpt);
+    alts.forEach(function(a){var o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
+    (function(capEi,capSel){
+      capSel.addEventListener('change',function(){
+        if(capSel.value){swEx(letter,capEi,capSel.value);capSel.value='';}
+      });
+    })(ei,sel);
+
+    exhdr.appendChild(exinfo);exhdr.appendChild(sel);
+    card.appendChild(exhdr);
+
+    var colhdr=document.createElement('div');colhdr.className='set-hr';
+    colhdr.innerHTML='<div class="sn" style="font-size:10px;color:var(--t3)">SET</div>'
+      +'<div class="sp" style="font-size:10px;color:var(--t3)">PREV</div>'
+      +'<div style="font-size:10px;color:var(--t3);text-align:center">LBS</div>'
+      +'<div style="font-size:10px;color:var(--t3);text-align:center">REPS</div>'
+      +'<div></div>';
+    card.appendChild(colhdr);
+
+    for(var si=0;si<3;si++){
+      var prev=getPrevEJ(letter,ei,si);
+      var row=document.createElement('div');row.className='set-r';row.id='sr_'+letter+'_'+ei+'_'+si;
+      var snum=document.createElement('div');snum.className='sn';snum.textContent=si+1;
+      var sprev=document.createElement('div');sprev.className='sp';sprev.textContent=prev;
+      var winp=document.createElement('input');winp.type='number';winp.placeholder='lbs';winp.className='si';winp.id='sw_'+letter+'_'+ei+'_'+si;
+      var rinp=document.createElement('input');rinp.type='number';rinp.placeholder=ex[2];rinp.className='si';rinp.id='sr2_'+letter+'_'+ei+'_'+si;
+      var chk=document.createElement('div');chk.className='sc';chk.id='sc_'+letter+'_'+ei+'_'+si;
+      (function(capL,capEi,capSi,capChk,capRow){
+        capChk.addEventListener('click',function(){
+          var on=capChk.classList.contains('on');
+          if(on){capChk.classList.remove('on');capChk.innerHTML='';capRow.classList.remove('done');}
+          else{capChk.classList.add('on');capChk.innerHTML='&#10003;';capRow.classList.add('done');}
+          savStrEJ(capL);
+        });
+      })(letter,ei,si,chk,row);
+      row.appendChild(snum);row.appendChild(sprev);row.appendChild(winp);row.appendChild(rinp);row.appendChild(chk);
+      card.appendChild(row);
+    }
+    sheet.appendChild(card);
+  });
+
+  var finbtn=document.createElement('button');
+  finbtn.className='fin-btn';finbtn.textContent='Finish Workout';
+  finbtn.addEventListener('click',function(){finStrEJ(letter);});
+  sheet.appendChild(finbtn);
+
+  modal.appendChild(sheet);
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function getPrevEJ(l,ei,si){
+  if(!st.strSessions||!st.strSessions.length) return '-';
+  var exs=l==='A'?FBA:FBB;
+  var exName=exs[ei]?exs[ei][0]:'';
+  for(var i=st.strSessions.length-1;i>=0;i--){
+    var sess=st.strSessions[i];
+    if(sess.type!=='Full Body '+l) continue;
+    (sess.exercises||[]).forEach(function(ex){
+      if(ex.name===exName&&ex.sets&&ex.sets[si]&&ex.sets[si].done){
+        exName='FOUND:'+ex.sets[si].w+'x'+ex.sets[si].r;
+      }
+    });
+    if(exName.indexOf('FOUND:')===0) return exName.replace('FOUND:','');
+  }
+  return '-';
+}
+
+function closeStr(l){
+  var m=document.getElementById('mod-'+l);
+  if(m){m.classList.remove('open');m.innerHTML='';}
+  document.body.style.overflow='';
+}
+
+function swEx(l,ei,v){if(!v)return;var e=document.getElementById('en_'+l+'_'+ei);if(e)e.textContent=v;}
+
+function savStrEJ(l){
+  var exs=l==='A'?FBA:FBB;
+  var exercises=[];
+  for(var ei=0;ei<exs.length;ei++){
+    var nm=document.getElementById('en_'+l+'_'+ei);
+    var sets=[];
+    for(var si=0;si<3;si++){
+      var we=document.getElementById('sw_'+l+'_'+ei+'_'+si);
+      var re=document.getElementById('sr2_'+l+'_'+ei+'_'+si);
+      var ce=document.getElementById('sc_'+l+'_'+ei+'_'+si);
+      sets.push({w:we?parseInt(we.value)||0:0,r:re?parseInt(re.value)||0:0,done:ce?ce.classList.contains('on'):false});
+    }
+    exercises.push({name:nm?nm.textContent:exs[ei][0],sets:sets});
+  }
+  // Update last session of this type or create new
+  var today=getTodayStr();
+  var found=false;
+  if(st.strSessions){
+    for(var i=st.strSessions.length-1;i>=0;i--){
+      if(st.strSessions[i].type==='Full Body '+l&&st.strSessions[i].date===today){
+        st.strSessions[i].exercises=exercises;
+        found=true; break;
+      }
+    }
+  }
+  if(!found){
+    if(!st.strSessions) st.strSessions=[];
+    st.strSessions.push({type:'Full Body '+l,date:today,exercises:exercises});
+  }
+  sv();
+}
+
+function finStrEJ(l){
+  savStrEJ(l);
+  closeStr(l);
+  renderStr(); renderHome();
+  toast('Workout complete!');
+}
+// ── NUTRITION ─────────────────────────────────────────────────────────────
+function showNutr(){ renderNutr(); showScreen('NUTR'); }
+var nutrDate = null;
+var curMeal = 'breakfast';
+
+function getNDay(dateStr){
+  if(!st.nutr) st.nutr={};
+  if(!st.nutr[dateStr]) st.nutr[dateStr]={meals:{breakfast:[],lunch:[],dinner:[],snacks:[]}};
+  if(!st.nutr[dateStr].meals) st.nutr[dateStr].meals={breakfast:[],lunch:[],dinner:[],snacks:[]};
+  return st.nutr[dateStr];
+}
+
+function renderNutr(){
+  var t=document.getElementById('nutr-body'); if(!t) return;
+  if(!nutrDate) nutrDate=getTodayStr();
+  var nd=getNDay(nutrDate);
+  var meals=nd.meals||{breakfast:[],lunch:[],dinner:[],snacks:[]};
+  var totCal=0,totP=0,totC=0,totF=0;
+  Object.keys(meals).forEach(function(m){ (meals[m]||[]).forEach(function(f){ totCal+=f.cal||0;totP+=f.p||0;totC+=f.c||0;totF+=f.f||0; }); });
+  totP=Math.round(totP*10)/10; totC=Math.round(totC*10)/10; totF=Math.round(totF*10)/10;
+  var target=st.calTarget||2200;
+  var rem=target-totCal;
+
+  var html='<div style="padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="font-size:22px;font-weight:800;color:var(--t1)">Nutrition</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="changeNutrDate(-1)" style="background:var(--s2);border:1px solid var(--b1);color:var(--t2);padding:6px 10px;border-radius:8px;cursor:pointer">&lt;</button>'
+    +'<span style="font-size:12px;color:var(--t2);align-self:center">'+nutrDate+'</span>'
+    +'<button onclick="changeNutrDate(1)" style="background:var(--s2);border:1px solid var(--b1);color:var(--t2);padding:6px 10px;border-radius:8px;cursor:pointer">&gt;</button>'
+    +'</div></div>';
+
+  // Calorie ring summary
+  html+='<div class="card" style="text-align:center">'
+    +'<div style="font-size:36px;font-weight:900;color:var(--t1)">'+totCal+'</div>'
+    +'<div style="font-size:12px;color:var(--t3);margin-bottom:8px">of '+target+' cal &middot; '+(rem>=0?rem+' remaining':Math.abs(rem)+' over')+'</div>'
+    +'<div style="height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:12px">'
+    +'<div style="height:100%;width:'+Math.min(100,Math.round(totCal/target*100))+'%;background:'+(rem<0?'var(--red)':'var(--orange)')+';border-radius:3px"></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
+    +'<div><div style="font-size:16px;font-weight:800;color:#e74c3c">'+totP+'g</div><div style="font-size:10px;color:var(--t3)">Protein</div></div>'
+    +'<div><div style="font-size:16px;font-weight:800;color:#3498db">'+totC+'g</div><div style="font-size:10px;color:var(--t3)">Carbs</div></div>'
+    +'<div><div style="font-size:16px;font-weight:800;color:#f39c12">'+totF+'g</div><div style="font-size:10px;color:var(--t3)">Fat</div></div>'
+    +'</div></div>';
+
+  // Meal sections
+  ['breakfast','lunch','dinner','snacks'].forEach(function(meal){
+    var items=meals[meal]||[];
+    var mCal=items.reduce(function(a,f){return a+(f.cal||0);},0);
+    html+='<div class="card">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      +'<div style="font-size:13px;font-weight:700;text-transform:capitalize">'+meal+(mCal?' &middot; <span style="color:var(--t3);font-weight:600">'+mCal+' cal</span>':'')+'</div>'
+      +'<button onclick="openFoodModal(\''+meal+'\')" style="background:var(--orange);border:none;color:white;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit">+ Add</button>'
+      +'</div>';
+    if(items.length){
+      items.forEach(function(f,i){
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b1)">'
+          +'<div><div style="font-size:12px;font-weight:600">'+f.n+'</div>'
+          +'<div style="font-size:10px;color:var(--t3)">'+(f.p||0)+'g P &middot; '+(f.c||0)+'g C &middot; '+(f.f||0)+'g F</div></div>'
+          +'<div style="display:flex;align-items:center;gap:8px">'
+          +'<div style="font-size:12px;font-weight:700">'+f.cal+' cal</div>'
+          +'<button onclick="delFood(\''+meal+'\','+i+')" style="background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer">&times;</button>'
+          +'</div></div>';
+      });
+    } else {
+      html+='<div style="font-size:12px;color:var(--t3);font-style:italic">Nothing logged yet</div>';
+    }
+    html+='</div>';
+  });
+
+  t.innerHTML=html;
+}
+
+function changeNutrDate(dir){
+  var d=new Date(nutrDate); d.setDate(d.getDate()+dir);
+  var mm=d.getMonth()+1; var dd=d.getDate();
+  nutrDate=d.getFullYear()+'-'+(mm<10?'0':'')+mm+'-'+(dd<10?'0':'')+dd;
+  renderNutr();
+}
+
+function delFood(meal,idx){
+  var nd=getNDay(nutrDate);
+  nd.meals[meal].splice(idx,1);
+  sv(); renderNutr();
+}
+
+function openFoodModal(meal){
+  curMeal=meal;
+  var old=document.getElementById('food-modal');if(old)old.remove();
+  var ov=document.createElement('div'); ov.id='food-modal'; ov.className='modal-overlay';
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  var sh=document.createElement('div'); sh.className='modal-sheet';
+  sh.style.maxHeight='85vh';
+  sh.innerHTML='<div class="modal-hdr"><div class="modal-title" style="text-transform:capitalize">Add to '+meal+'</div>'
+    +'<button class="close-btn" onclick="document.getElementById(\'food-modal\').remove()">&times;</button></div>'
+    +'<input class="inp" id="food-search" placeholder="Search foods..." style="margin-bottom:10px" oninput="searchFoods(this.value)">'
+    +'<div id="food-list"></div>'
+    +'<div class="field" style="margin-top:12px"><div class="lbl">+ Add Custom Food</div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<input class="inp" id="cf-name" placeholder="Food name">'
+    +'<input class="inp" type="number" id="cf-cal" placeholder="Calories">'
+    +'<input class="inp" type="number" id="cf-p" placeholder="Protein (g)">'
+    +'<input class="inp" type="number" id="cf-c" placeholder="Carbs (g)">'
+    +'<input class="inp" type="number" id="cf-f" placeholder="Fat (g)">'
+    +'<input class="inp" id="cf-srv" placeholder="Serving size">'
+    +'</div>'
+    +'<button class="btn-primary" style="margin-top:10px" onclick="addCustomFood()">Add Custom Food</button>';
+  ov.appendChild(sh); document.body.appendChild(ov);
+  renderFoodList(getRecentFoods());
+}
+
+function getRecentFoods(){ return st.recentFoods||[]; }
+
+var foodSearchTimer=null;
+function searchFoods(q){
+  clearTimeout(foodSearchTimer);
+  var local=(getRecentFoods()||[]).filter(function(f){ return f.n&&f.n.toLowerCase().indexOf(q.toLowerCase())>=0; });
+  if(local.length||!q){ renderFoodList(local); return; }
+  document.getElementById('food-list').innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:13px">Searching...</div>';
+  foodSearchTimer=setTimeout(function(){
+    fetch('https://mikey-food-api2.mgrobinson07.workers.dev/search?q='+encodeURIComponent(q))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var results=[];
+      if(data&&data.foods&&data.foods.length) results=data.foods.map(function(f){ return {n:f.n||f.food_name||'Unknown',cal:Math.round(f.cal||f.nf_calories||0),p:Math.round((f.p||f.nf_protein||0)*10)/10,c:Math.round((f.c||f.nf_total_carbohydrate||0)*10)/10,f:Math.round((f.f||f.nf_total_fat||0)*10)/10,srv:f.srv||'100g'}; });
+      else if(data&&Array.isArray(data)) results=data.map(function(f){ return {n:f.n||'Unknown',cal:Math.round(f.cal||0),p:Math.round((f.p||0)*10)/10,c:Math.round((f.c||0)*10)/10,f:Math.round((f.f||0)*10)/10,srv:f.srv||'1 serving'}; });
+      if(results.length) renderFoodList(results);
+      else { document.getElementById('food-list').innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:13px">No results found</div>'; }
+    }).catch(function(){ document.getElementById('food-list').innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:13px">Search unavailable</div>'; });
+  },400);
+}
+
+function renderFoodList(list){
+  var container=document.getElementById('food-list'); if(!container) return;
+  container.innerHTML='';
+  list.forEach(function(food){
+    var row=document.createElement('div');
+    row.style.cssText='padding:10px 0;border-bottom:1px solid var(--b1)';
+    var topRow=document.createElement('div');
+    topRow.style.cssText='display:flex;align-items:center;gap:8px';
+    var info=document.createElement('div'); info.style.cssText='flex:1;min-width:0';
+    var nm=document.createElement('div'); nm.style.cssText='font-size:13px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis'; nm.textContent=food.n;
+    var meta=document.createElement('div'); meta.style.cssText='font-size:11px;color:var(--t3);margin-top:2px';
+    function makeMeta(q){ return (food.srv||'1 serving')+' x'+q+' = '+Math.round((food.cal||0)*q)+' cal, '+(Math.round((food.p||0)*q*10)/10)+'g P'; }
+    meta.textContent=makeMeta(1);
+    info.appendChild(nm); info.appendChild(meta);
+    var qi=document.createElement('input'); qi.type='number'; qi.value='1'; qi.min='0.1'; qi.step='0.5';
+    qi.style.cssText='width:50px;padding:5px;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:13px;font-weight:700;text-align:center;font-family:inherit';
+    qi.oninput=function(){ meta.textContent=makeMeta(parseFloat(qi.value)||1); };
+    var btn=document.createElement('button');
+    btn.style.cssText='background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:var(--orange);font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:inherit;flex-shrink:0';
+    btn.textContent='Add';
+    topRow.appendChild(info); topRow.appendChild(qi); topRow.appendChild(btn);
+    row.appendChild(topRow);
+    (function(f,q){ var fired=false; btn.onclick=function(){
+      if(fired)return; fired=true;
+      var qty=parseFloat(q.value)||1;
+      var nd=getNDay(nutrDate||getTodayStr());
+      nd.meals[curMeal].push({n:qty===1?f.n:f.n+' x'+qty,cal:Math.round((f.cal||0)*qty),p:Math.round((f.p||0)*qty*10)/10,c:Math.round((f.c||0)*qty*10)/10,f:Math.round((f.f||0)*qty*10)/10});
+      if(!st.recentFoods) st.recentFoods=[];
+      if(!st.recentFoods.find(function(r){return r.n===f.n;})) st.recentFoods.unshift(f);
+      if(st.recentFoods.length>20) st.recentFoods=st.recentFoods.slice(0,20);
+      sv(); document.getElementById('food-modal').remove(); renderNutr();
+    };})(food,qi);
+    container.appendChild(row);
+  });
+}
+
+function addCustomFood(){
+  var n=(document.getElementById('cf-name').value||'').trim(); if(!n){ toast('Enter a food name'); return; }
+  var food={n:n,cal:parseInt(document.getElementById('cf-cal').value)||0,p:parseFloat(document.getElementById('cf-p').value)||0,c:parseFloat(document.getElementById('cf-c').value)||0,f:parseFloat(document.getElementById('cf-f').value)||0,srv:document.getElementById('cf-srv').value||'1 serving'};
+  var nd=getNDay(nutrDate||getTodayStr());
+  nd.meals[curMeal].push({n:food.n,cal:food.cal,p:food.p,c:food.c,f:food.f});
+  if(!st.recentFoods) st.recentFoods=[];
+  if(!st.recentFoods.find(function(r){return r.n===food.n;})) st.recentFoods.unshift(food);
+  sv(); document.getElementById('food-modal').remove(); renderNutr();
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+function showSet(){ renderSet(); showScreen('SET'); }
+
+function renderSet(){
+  var t=document.getElementById('set-body'); if(!t) return;
+  var ts=st.lastUpdate;
+  t.innerHTML='<div style="padding:14px 16px 10px"><div style="font-size:22px;font-weight:800;color:var(--t1)">Settings</div></div>'
+    +'<div class="card">'
+    +'<div class="card-title">Profile</div>'
+    +'<div class="field"><div class="lbl">Name</div><input class="inp" id="set-name" value="'+(st.profileName||'EJ')+'" onchange="st.profileName=this.value;sv()"></div>'
+    +'<div class="field"><div class="lbl">Calorie Target</div><input class="inp" type="number" id="set-cal" value="'+(st.calTarget||2200)+'" onchange="st.calTarget=parseInt(this.value)||2200;sv()"></div>'
+    +'</div>'
+    +'<div class="card">'
+    +'<div class="card-title">Cloud Sync</div>'
+    +'<div style="font-size:12px;color:var(--t2);margin-bottom:12px">Auto-syncs to Firebase after each change. Use Force Pull on new devices.</div>'
+    +'<div style="font-size:11px;color:var(--t3);margin-bottom:12px">'+(ts?'Last saved: '+new Date(ts).toLocaleTimeString():'Not yet saved to cloud')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<button class="btn-secondary" onclick="fbPull(false)">Force Pull</button>'
+    +'<button class="btn-primary" onclick="fbPush(false)">Force Push</button>'
+    +'</div></div>'
+    +'<div class="card">'
+    +'<div class="card-title">Data</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<button class="btn-secondary" onclick="exportData()">Export JSON</button>'
+    +'<button class="btn-secondary" onclick="document.getElementById(\'restore-file\').click()">Restore</button>'
+    +'</div>'
+    +'<input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">'
+    +'</div>';
+}
+
+function exportData(){
+  var blob=new Blob([JSON.stringify({d:st,v:1})],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='ej_backup_'+getTodayStr()+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function restoreData(input){
+  var file=input.files[0]; if(!file) return;
+  var r=new FileReader();
+  r.onload=function(ev){ try{ var p=JSON.parse(ev.target.result); if(p.d){st=p.d;sv();renderHome();toast('Restored!');} }catch(er){toast('Invalid file');} };
+  r.readAsText(file);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+window.onload = function(){
+  document.getElementById('nav-home').onclick = function(){ renderHome(); showScreen('HOME'); };
+  document.getElementById('nav-golf').onclick = function(){ renderGolf(); showScreen('GOLF'); };
+  document.getElementById('nav-str').onclick = function(){ renderStr(); showScreen('STR'); };
+  document.getElementById('nav-nutr').onclick = function(){ nutrDate=getTodayStr(); renderNutr(); showScreen('NUTR'); };
+  document.getElementById('btn-set').onclick = showSet;
+  renderHome();
+  initFirebaseSync();
+};
+</script>
+<div class="modal-bg" id="mod-A"></div>
+<div class="modal-bg" id="mod-B"></div>
+</body>
+</html>
