@@ -413,7 +413,7 @@ function openGolfCoach(){
         '<div style="font-size:24px">⛳</div>'+
         '<div>'+
           '<div style="font-size:17px;font-weight:800;color:var(--t1)">Golf Coach</div>'+
-          '<div style="font-size:11px;color:var(--t3)">Ask anything about your game</div>'+
+          '<div style="font-size:11px;color:var(--t3)">Ask anything · Upload a swing photo for analysis</div>'+
         '</div>'+
       '</div>'+
       '<button id="gc-close" style="background:var(--s2);border:1px solid var(--b1);color:var(--t2);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer">✕ Close</button>'+
@@ -436,7 +436,9 @@ function openGolfCoach(){
 
     // Input bar
     '<div style="padding:12px 16px 24px;border-top:1px solid var(--b1);display:flex;gap:8px;flex-shrink:0;background:'+hdrBg+'">'+
-      '<input id="gc-input" type="text" placeholder="Describe what\'s going wrong..." style="flex:1;padding:11px 14px;border:1px solid var(--b2);border-radius:24px;background:var(--s2);color:var(--t1);font-size:14px;font-family:inherit;outline:none">'+
+      '<button id="gc-camera" title="Upload swing photo" style="background:var(--s2);border:1px solid var(--b2);color:var(--t2);font-size:18px;width:44px;height:44px;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">📷</button>'+
+      '<input id="gc-img-input" type="file" accept="image/*" capture="environment" style="display:none">'+
+      '<input id="gc-input" type="text" placeholder="Describe or upload your swing..." style="flex:1;padding:11px 14px;border:1px solid var(--b2);border-radius:24px;background:var(--s2);color:var(--t1);font-size:14px;font-family:inherit;outline:none">'+
       '<button id="gc-send" style="background:linear-gradient(135deg,#378ADD,#1a5fa8);border:none;color:white;font-size:20px;width:44px;height:44px;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">↑</button>'+
     '</div>';
 
@@ -507,6 +509,99 @@ function openGolfCoach(){
   document.getElementById('gc-input').addEventListener('keydown',function(e){
     if(e.key==='Enter') sendMessage(this.value);
   });
+
+  // Camera button — open file picker
+  document.getElementById('gc-camera').addEventListener('click',function(){
+    document.getElementById('gc-img-input').click();
+  });
+
+  // Handle image selection
+  document.getElementById('gc-img-input').addEventListener('change',function(){
+    var file = this.files[0];
+    if(!file) return;
+    var caption = document.getElementById('gc-input').value.trim() || 'Please analyze my golf swing in this photo. What do you see that needs improvement?';
+    document.getElementById('gc-input').value = '';
+
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var b64 = ev.target.result.split(',')[1];
+      var mime = file.type || 'image/jpeg';
+      sendImageMessage(b64, mime, caption);
+    };
+    reader.readAsDataURL(file);
+    // Reset input so same file can be re-selected
+    this.value = '';
+  });
+
+  function sendImageMessage(b64, mime, caption){
+    var messages = document.getElementById('gc-messages');
+
+    // User bubble with thumbnail + caption
+    var userBubble = document.createElement('div');
+    userBubble.style.cssText = 'align-self:flex-end;max-width:80%';
+    userBubble.innerHTML =
+      '<img src="data:'+mime+';base64,'+b64+'" style="width:100%;max-width:220px;border-radius:12px;display:block;margin-bottom:6px">'+
+      '<div style="background:linear-gradient(135deg,var(--orange),#e04400);color:white;border-radius:12px 12px 4px 12px;padding:10px 12px;font-size:13px;font-weight:500;line-height:1.4">'+caption+'</div>';
+    messages.appendChild(userBubble);
+
+    // Loading bubble
+    var loadingBubble = document.createElement('div');
+    loadingBubble.style.cssText = 'background:var(--s2);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:13px;color:var(--t3);max-width:85%';
+    loadingBubble.textContent = '🔍 Analyzing your swing...';
+    messages.appendChild(loadingBubble);
+    messages.scrollTop = messages.scrollHeight;
+
+    var systemPrompt = 'You are an expert golf coach with PGA-level swing analysis skills. Your student is EJ. Analyze the swing photo carefully. Look for:
+- Grip and setup
+- Stance and alignment
+- Backswing position
+- Impact position
+- Follow-through
+- Weight transfer
+- Club face angle
+Be specific about what you SEE in the image. Give 2-3 prioritized fixes with drills. Be encouraging but honest. Around 200-250 words.';
+
+    // Add to conversation history as vision message
+    var visionMsg = {
+      role: 'user',
+      content: [
+        {type:'image', source:{type:'base64', media_type:mime, data:b64}},
+        {type:'text', text:caption}
+      ]
+    };
+    conversationHistory.push(visionMsg);
+
+    fetch('https://mikey-food-api2.mgrobinson07.workers.dev/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:800,
+        system:systemPrompt,
+        messages:conversationHistory
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var text = data.content&&data.content[0]?data.content[0].text:(data.error?'Error: '+data.error.message:'Could not analyze image.');
+      conversationHistory.push({role:'assistant', content:text});
+
+      var html = text
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/
+
+/g,'<br><br>')
+        .replace(/
+/g,'<br>');
+
+      loadingBubble.style.cssText = 'background:var(--s2);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:13px;color:var(--t1);max-width:85%;line-height:1.6';
+      loadingBubble.innerHTML = html;
+      messages.scrollTop = messages.scrollHeight;
+    })
+    .catch(function(err){
+      loadingBubble.textContent = 'Error: '+err.message;
+    });
+  }
 
   // Quick chips
   overlay.querySelectorAll('.gc-chip').forEach(function(chip){
