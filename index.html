@@ -374,6 +374,148 @@ function renderHome(){
 // ── GOLF SCREEN ────────────────────────────────────────────────────────────
 function showGolf(){ renderGolf(); showScreen('GOLF'); }
 
+
+function openGolfCoach(){
+  var old = document.getElementById('golf-coach-screen');
+  if(old){old.remove();return;}
+
+  // Build context from stored golf data
+  var rounds = st.golfRounds||[];
+  var practices = st.golfPractice||[];
+  var scores = rounds.filter(function(r){return r.total;}).map(function(r){return r.total;});
+  var avg = scores.length?Math.round(scores.reduce(function(a,b){return a+b;})/scores.length*10)/10:null;
+  var best = scores.length?Math.min.apply(null,scores):null;
+  var recent = rounds.slice().reverse().slice(0,3);
+  var allPutts = rounds.filter(function(r){return r.holes;}).map(function(r){return r.holes.reduce(function(a,h){return a+(h.putts||0);},0);});
+  var avgPutts = allPutts.length?Math.round(allPutts.reduce(function(a,b){return a+b;},0)/allPutts.length*10)/10:null;
+  var allGIR = rounds.filter(function(r){return r.holes;}).map(function(r){return r.holes.filter(function(h){return h.gir;}).length;});
+  var avgGIR = allGIR.length?Math.round(allGIR.reduce(function(a,b){return a+b;},0)/allGIR.length*10)/10:null;
+
+  var statsContext = rounds.length?
+    'Golf stats: avg score '+avg+', best round '+best+(avgPutts?', avg putts '+avgPutts:'')+(avgGIR?', avg GIR '+avgGIR:'')+
+    '. Recent rounds: '+recent.map(function(r){return r.total+(r.course?' at '+r.course:'');}).join(', ')+'.':
+    'No rounds logged yet.';
+
+  var practiceContext = practices.length?
+    'Recent practice: '+practices.slice().reverse().slice(0,3).map(function(p){return p.type+(p.notes?' ('+p.notes+')':'');}).join(', ')+'.':
+    'No practice sessions logged yet.';
+
+  var overlay = document.createElement('div');
+  overlay.id = 'golf-coach-screen';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column';
+
+  var isDark = document.body.classList.contains('dark');
+  var hdrBg = isDark?'#1C1C1E':'#FFFFFF';
+
+  overlay.innerHTML =
+    '<div style="position:sticky;top:0;background:'+hdrBg+';padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--b1);flex-shrink:0">'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<div style="font-size:24px">⛳</div>'+
+        '<div>'+
+          '<div style="font-size:17px;font-weight:800;color:var(--t1)">Golf Coach</div>'+
+          '<div style="font-size:11px;color:var(--t3)">Ask anything about your game</div>'+
+        '</div>'+
+      '</div>'+
+      '<button id="gc-close" style="background:var(--s2);border:1px solid var(--b1);color:var(--t2);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer">✕ Close</button>'+
+    '</div>'+
+
+    // Quick prompt chips
+    '<div style="padding:12px 16px 0;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0">'+
+      ['I\'m shanking my irons','My drives are slicing','I keep 3-putting','Help me with chipping','How do I hit out of a bunker','My ball striking is inconsistent'].map(function(q){
+        return '<button class="gc-chip" style="background:var(--s2);border:1px solid var(--b2);color:var(--t2);font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap">'+q+'</button>';
+      }).join('')+
+    '</div>'+
+
+    // Chat history
+    '<div id="gc-messages" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:12px">'+
+      '<div style="background:var(--s2);border-radius:16px;padding:14px;font-size:13px;color:var(--t2);line-height:1.6">'+
+        '👋 Hey EJ! I\'ve looked at your stats. Tell me what part of your game you\'re struggling with and I\'ll give you specific drills and fixes.'+
+        (rounds.length?'<br><br><span style="color:var(--t3);font-size:11px">'+statsContext+'</span>':'')+
+      '</div>'+
+    '</div>'+
+
+    // Input bar
+    '<div style="padding:12px 16px 24px;border-top:1px solid var(--b1);display:flex;gap:8px;flex-shrink:0;background:'+hdrBg+'">'+
+      '<input id="gc-input" type="text" placeholder="Describe what\'s going wrong..." style="flex:1;padding:11px 14px;border:1px solid var(--b2);border-radius:24px;background:var(--s2);color:var(--t1);font-size:14px;font-family:inherit;outline:none">'+
+      '<button id="gc-send" style="background:linear-gradient(135deg,#378ADD,#1a5fa8);border:none;color:white;font-size:20px;width:44px;height:44px;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">↑</button>'+
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  document.getElementById('gc-close').addEventListener('click',function(){overlay.remove();});
+
+  var conversationHistory = [];
+
+  function sendMessage(userText){
+    if(!userText.trim()) return;
+    var input = document.getElementById('gc-input');
+    if(input) input.value='';
+
+    var messages = document.getElementById('gc-messages');
+
+    // Add user bubble
+    var userBubble = document.createElement('div');
+    userBubble.style.cssText = 'background:linear-gradient(135deg,var(--orange),#e04400);color:white;border-radius:16px 16px 4px 16px;padding:12px 14px;font-size:13px;font-weight:500;align-self:flex-end;max-width:80%;line-height:1.5';
+    userBubble.textContent = userText;
+    messages.appendChild(userBubble);
+
+    // Add loading bubble
+    var loadingBubble = document.createElement('div');
+    loadingBubble.style.cssText = 'background:var(--s2);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:13px;color:var(--t3);max-width:85%';
+    loadingBubble.textContent = '⛳ Thinking...';
+    messages.appendChild(loadingBubble);
+    messages.scrollTop = messages.scrollHeight;
+
+    // Build conversation history
+    conversationHistory.push({role:'user', content:userText});
+
+    var systemPrompt = 'You are an expert golf coach. Your student is EJ. Here is his golf data:\n'+statsContext+'\n'+practiceContext+'\n\nProvide specific, actionable coaching advice. Focus on:\n- Diagnosing the root cause of the problem\n- 2-3 concrete drills or fixes he can use immediately\n- Keep it conversational and encouraging\n- Use golf terminology appropriately\n- Reference his actual stats when relevant\nKeep responses focused and practical, around 150-250 words.';
+
+    fetch('https://mikey-food-api2.mgrobinson07.workers.dev/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:600,
+        system:systemPrompt,
+        messages:conversationHistory
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var text = data.content&&data.content[0]?data.content[0].text:(data.error?'Error: '+data.error.message:'Sorry, I couldn\'t get a response.');
+      conversationHistory.push({role:'assistant',content:text});
+
+      // Format response
+      var html = text
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\n\n/g,'<br><br>')
+        .replace(/\n/g,'<br>');
+
+      loadingBubble.style.cssText = 'background:var(--s2);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:13px;color:var(--t1);max-width:85%;line-height:1.6';
+      loadingBubble.innerHTML = html;
+      messages.scrollTop = messages.scrollHeight;
+    })
+    .catch(function(err){
+      loadingBubble.textContent = 'Error: '+err.message;
+    });
+  }
+
+  document.getElementById('gc-send').addEventListener('click',function(){
+    sendMessage(document.getElementById('gc-input').value);
+  });
+  document.getElementById('gc-input').addEventListener('keydown',function(e){
+    if(e.key==='Enter') sendMessage(this.value);
+  });
+
+  // Quick chips
+  overlay.querySelectorAll('.gc-chip').forEach(function(chip){
+    chip.addEventListener('click',function(){
+      sendMessage(chip.textContent);
+    });
+  });
+}
+
 function renderGolf(){
   var t = document.getElementById('golf-body'); if(!t) return;
   var rounds = (st.golfRounds||[]).slice().reverse();
@@ -381,7 +523,10 @@ function renderGolf(){
 
   var html = '<div style="padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center">'
     +'<div style="font-size:22px;font-weight:800;color:var(--t1)">Golf</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="openGolfCoach()" style="background:rgba(55,138,221,.15);border:1px solid rgba(55,138,221,.3);color:#378ADD;font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;cursor:pointer;font-family:inherit">🤖 Coach</button>'
     +'<button onclick="openGolfRound()" style="background:linear-gradient(135deg,var(--orange),#e04400);border:none;color:white;font-size:13px;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:inherit">+ Round</button>'
+    +'</div>'
     +'</div>';
 
   // Practice buttons
