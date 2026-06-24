@@ -711,58 +711,49 @@ function saveGolfPractice(type){
 }
 // ── STRENGTH TRAINING ──────────────────────────────────────────────────────
 // Monday: Upper Body A (Push focus)
+// DAY 1 – UPPER A (Chest/Back)
 var UPA=[
-  ["Barbell Bench Press","4","6","Grip just outside shoulder-width, full ROM, control descent"],
-  ["Incline Dumbbell Press","3","10","30-45° incline, press to full lockout"],
-  ["Overhead Press (Barbell)","4","6","Brace core, bar path straight up, lock out overhead"],
-  ["Ring Dips","3","10","Lean forward for chest, stay upright for triceps"],
-  ["Dumbbell Lateral Raise","3","15","Lead with elbows, slight bend, control down"],
-  ["Tricep Overhead Extension","3","12","Dumbbell or band, full stretch at bottom"],
-  ["Face Pull (Band)","3","15","Pull to forehead, elbows high, squeeze rear delts"]
+  ["BB Bench Press","4","4-6","Top set 205×4-6, backoffs 190×5×3. Grip just outside shoulder-width, full ROM, control descent"],
+  ["Pull-Ups","4","6-10","Dead hang start, chin over bar, controlled descent"],
+  ["Incline DB Bench","3","8-10","30-45° incline, 3 sec negative + 1 sec pause at bottom"],
+  ["Chest-Supported DB Row","4","8-10","Chest on pad, pull elbows back, squeeze at top"],
+  ["Skull Crushers","3","10","EZ bar or dumbbells, full stretch at bottom, control up"]
 ];
 
-// Tuesday: Lower Body A (Quad focus)
+// DAY 2 – LOWER A (Glute/Ham)
 var LBA=[
-  ["Back Squat","5","5","Bar on traps, knees track toes, depth at parallel or below"],
-  ["Bulgarian Split Squat","3","10","Rear foot elevated, front foot forward, drop straight down"],
-  ["Leg Press (Plyo Box Step-Up)","3","12","Drive through heel, full hip extension at top"],
-  ["Romanian Deadlift","4","8","Hinge at hips, soft knee, feel hamstring stretch"],
-  ["Dumbbell Walking Lunge","3","12","Per leg, upright torso, full knee extension"],
-  ["Calf Raise (Barbell)","4","15","Bar on traps, full ROM, pause at top and bottom"],
-  ["Battle Rope Finisher","1","30s","Max effort, alternating waves"]
+  ["Barbell RDL","4","5-8","Top: heavy 3-5, backoffs 2×5-6 @ 255. Hinge at hips, soft knee, feel hamstring stretch"],
+  ["Bulgarian Split Squat","3","8-10","Per leg. Rear foot elevated, drop straight down, drive through front heel"],
+  ["Barbell Hip Thrust","3","8-12","Shoulders on bench, bar over hips, drive up and squeeze glutes at top"],
+  ["Nordic Curl / Sliding Leg Curl","3","6-10","Anchor feet, lower as slow as possible, use hands to assist up if needed"],
+  ["Standing Calf Raise","4","10-15","Full ROM, pause at top and bottom, slow and controlled"]
 ];
 
-// Thursday: Upper Body B (Pull focus)
-var UPB=[
-  ["Pull-up (Weighted)","4","6","Dead hang start, chin over bar, controlled descent"],
-  ["Barbell Row","4","8","Hinge 45°, pull to lower chest, squeeze at top"],
-  ["Ring Row","3","12","Feet elevated for more challenge, full protraction at bottom"],
-  ["Single-Arm Dumbbell Row","3","10","Per side, elbow high, full stretch"],
-  ["Dumbbell Curl","3","12","Supinate at top, no swinging"],
-  ["Hammer Curl","3","12","Neutral grip, targets brachialis"],
-  ["Band Pull-Apart","3","20","Arms straight, squeeze shoulder blades together"]
-];
-
-// Friday: Lower Body B (Posterior chain focus)
-var LBB=[
-  ["Conventional Deadlift","5","5","Brace hard, drive floor away, lockout with glutes"],
-  ["Hip Thrust (Barbell)","4","10","Shoulders on bench, drive hips up, squeeze glutes at top"],
-  ["Single-Leg RDL","3","8","Per side, hinge on standing leg, maintain neutral spine"],
-  ["Goblet Squat","3","15","Heels elevated if needed, deep squat, stay upright"],
-  ["Resistance Band Pull-Through","3","15","Hinge pattern, drive hips forward, feel glutes"],
-  ["Nordic Hamstring Curl","3","6","Anchor feet under rack, lower as slow as possible"],
-  ["Plyo Box Jump","3","5","Max height, soft landing, step down — don't jump down"]
-];
-
-// Wednesday: Core
+// DAY 3 – CORE
 var CORE=[
-  ["Dead Bug","3","10","Per side, lower back pressed flat, slow and controlled"],
-  ["Pallof Press (Band)","3","12","Per side, resist rotation, arms fully extended"],
-  ["Ab Wheel Rollout","3","10","From knees, full extension, engage lats to pull back"],
-  ["Hanging Leg Raise","3","12","Dead hang, legs straight or tucked, no swinging"],
-  ["Cable/Band Woodchop","3","12","Per side, rotate from hips not just arms"],
-  ["Plank Shoulder Tap","3","20","Hips still, alternate taps, squeeze glutes"],
-  ["Battle Rope Slam","3","10","Full extension overhead, slam hard, reset"]
+  ["Ab Wheel","4","6-10","From knees, full extension, engage lats to pull back"],
+  ["Weighted Crunch / Decline Sit-Up","4","10-15","Hold plate or dumbbell, full range of motion"],
+  ["Hanging Knee/Leg Raises","3","10-15","Dead hang, controlled, no swinging"],
+  ["RKC Plank (Optional)","2","20-40s","Posterior pelvic tilt, squeeze everything, full body tension"]
+];
+
+// DAY 4 – UPPER B (Shoulders/Arms)
+var UPB=[
+  ["Seated DB Shoulder Press","4","6-8","Sit upright, press to full lockout, control descent"],
+  ["Chin-Ups","3","8-12","Supinated grip, full hang, chin over bar"],
+  ["DB Lateral Raises","4","15-20","Lead with elbows, slight bend, control down slowly"],
+  ["Close-Grip Bench","4","6-10","@ 165. Elbows tucked, bar to lower chest, tricep focus"],
+  ["Incline DB Curl","3","10-12","30° incline, full stretch at bottom, supinate at top"],
+  ["Close-Grip Push-Ups","2","AMRAP","Elbows tight to body, full ROM"],
+  ["Hammer Curl (Optional)","2","12-15","Neutral grip, no swinging, targets brachialis"]
+];
+
+// DAY 5 – LOWER B (Quad/Glute)
+var LBB=[
+  ["High-Bar Squat","4","6-10","Bar high on traps, upright torso, knees track toes, full depth"],
+  ["Heels-Elevated Goblet Squat","3","12-15","Plates under heels, upright torso, deep squat"],
+  ["Step-Ups","3","8-12","Per leg. Drive through heel, full hip extension at top"],
+  ["Single-Leg Standing Calf Raise","4","10-15","Per side. Full ROM, pause at top"]
 ];
 
 // Legacy names kept for backward compat
@@ -898,7 +889,7 @@ function openStr(letter){
 
   var hdr=document.createElement('div');hdr.className='mhdr';
   var htxt=document.createElement('div');
-  var titleMap={UPA:'Upper Body A — Push',LBA:'Lower Body A — Quads',CORE:'Core Day',UPB:'Upper Body B — Pull',LBB:'Lower Body B — Posterior',A:'Upper Body A',B:'Upper Body B'};
+  var titleMap={UPA:'Upper A — Chest/Back',LBA:'Lower A — Glute/Ham',CORE:'Core Day',UPB:'Upper B — Shoulders/Arms',LBB:'Lower B — Quad/Glute',A:'Upper A — Chest/Back',B:'Upper B — Shoulders/Arms'};
   htxt.innerHTML='<div class="mtit">'+(titleMap[letter]||letter)+'</div>';
   var xbtn=document.createElement('button');
   xbtn.className='mclose';xbtn.innerHTML='&#10005;';
@@ -997,7 +988,7 @@ function swEx(l,ei,v){if(!v)return;var e=document.getElementById('en_'+l+'_'+ei)
 
 function savStrEJ(l){
   var exMap3={UPA:UPA,LBA:LBA,CORE:CORE,UPB:UPB,LBB:LBB,A:UPA,B:UPB};
-  var typeMap3={UPA:'Upper Body A',LBA:'Lower Body A',CORE:'Core Day',UPB:'Upper Body B',LBB:'Lower Body B',A:'Upper Body A',B:'Upper Body B'};
+  var typeMap3={UPA:'Upper A',LBA:'Lower A',CORE:'Core',UPB:'Upper B',LBB:'Lower B',A:'Upper A',B:'Upper B'};
   var exs=(exMap3[l])||UPA;
   var exercises=[];
   for(var ei=0;ei<exs.length;ei++){
