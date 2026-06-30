@@ -551,7 +551,7 @@ function openGolfCoach(){
     messages.appendChild(loadingBubble);
     messages.scrollTop = messages.scrollHeight;
 
-    var systemPrompt = 'You are an expert golf coach with PGA-level swing analysis skills. Your student is EJ. Analyze the swing photo carefully. Look for:
+    var systemPrompt = `You are an expert golf coach with PGA-level swing analysis skills. Your student is EJ. Analyze the swing photo carefully. Look for:
 - Grip and setup
 - Stance and alignment
 - Backswing position
@@ -559,7 +559,7 @@ function openGolfCoach(){
 - Follow-through
 - Weight transfer
 - Club face angle
-Be specific about what you SEE in the image. Give 2-3 prioritized fixes with drills. Be encouraging but honest. Around 200-250 words.';
+Be specific about what you SEE in the image. Give 2-3 prioritized fixes with drills. Be encouraging but honest. Around 200-250 words.`;
 
     // Add to conversation history as vision message
     var visionMsg = {
@@ -588,11 +588,8 @@ Be specific about what you SEE in the image. Give 2-3 prioritized fixes with dri
 
       var html = text
         .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-        .replace(/
-
-/g,'<br><br>')
-        .replace(/
-/g,'<br>');
+        .replace(/\n\n/g,'<br><br>')
+        .replace(/\n/g,'<br>');
 
       loadingBubble.style.cssText = 'background:var(--s2);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:13px;color:var(--t1);max-width:85%;line-height:1.6';
       loadingBubble.innerHTML = html;
