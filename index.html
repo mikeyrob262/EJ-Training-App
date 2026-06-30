@@ -712,6 +712,24 @@ function renderGolf(){
 }
 
 function delGolfRound(idx){ if(!st.golfRounds)return; st.golfRounds.splice(idx,1); sv(); renderGolf(); renderHome(); }
+
+function checkDailyReset(){
+  var today = new Date().toISOString().split('T')[0];
+  var lastDate = st.lastRoundDate || '';
+  if(lastDate && lastDate !== today){
+    // New day — save any in-progress round data if exists
+    if(st.currentRound && st.currentRound.holes && st.currentRound.holes.length){
+      if(!st.golfRounds) st.golfRounds = [];
+      st.currentRound.date = lastDate;
+      st.currentRound.autoSaved = true;
+      st.golfRounds.push(st.currentRound);
+      st.currentRound = null;
+      toast('Yesterday\'s round auto-saved!');
+    }
+  }
+  st.lastRoundDate = today;
+  sv();
+}
 function delGolfPractice(idx){ if(!st.golfPractice)return; st.golfPractice.splice(idx,1); sv(); renderGolf(); renderHome(); }
 
 function showGolfPracticeMenu(){
@@ -1500,6 +1518,7 @@ window.onload = function(){
     localStorage.setItem('ejDarkMode',isDark?'1':'0');
     darkBtn.style.color=isDark?'#FC4C02':'';
   });
+  checkDailyReset();
   renderHome();
   initFirebaseSync();
 };
